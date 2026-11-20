@@ -1,0 +1,27 @@
+{
+  "name": "pkj-mails",
+  "version": "1.0.0",
+  "description": "PKJ Mails - a simple, self-hosted webmail with a familiar inbox look. Works with SQLite, MongoDB, PostgreSQL, MySQL or Firebase.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "keywords": ["webmail", "email", "inbox", "smtp", "imap", "self-hosted"],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "nodemailer": "^6.10.1",
+    "sanitize-html": "^2.14.0"
+  },
+  "optionalDependencies": {
+    "imapflow": "^1.0.188",
+    "mongodb": "^6.16.0",
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.0"
+  }
+}

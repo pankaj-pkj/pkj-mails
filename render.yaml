@@ -1,0 +1,22 @@
+# Render Blueprint: New + > Blueprint > pick this repo. Fill the values marked sync: false.
+services:
+  - type: web
+    name: pkj-mails
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: APP_SECRET
+        generateValue: true
+      - key: DB_TYPE
+        value: mongodb
+      - key: DATABASE_URL
+        sync: false
+      - key: SETUP_CODE
+        sync: false
+      - key: TRUST_PROXY
+        value: "1"
