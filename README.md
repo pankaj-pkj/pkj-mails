@@ -1,267 +1,242 @@
-<p align="center"><img src="public/logo.svg" width="72" alt="PKJ Mails logo"></p>
+<p align="center"><img src="public/logo.svg" width="76" alt="PKJ Mails logo"></p>
 <h1 align="center">PKJ Mails</h1>
-<p align="center">Your own webmail. A clean, familiar inbox you can run on your computer or any server.<br>Works with <b>SQLite, MongoDB, PostgreSQL, MySQL or Firebase</b>. Sends with any SMTP provider.</p>
+
+<p align="center"><b>Your own webmail — with your own domain address.</b><br>
+A clean, familiar inbox you run yourself. Read and send mail as <code>you@yourdomain.com</code>, on any computer or server.</p>
+
+<p align="center">
+<a href="https://render.com/deploy?repo=https://github.com/pankaj-pkj/pkj-mails"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="32"></a>
+</p>
+
+<p align="center">
+<img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT license">
+<img src="https://img.shields.io/badge/node-22%2B-339933?logo=node.js&logoColor=white" alt="Node 22+">
+<img src="https://img.shields.io/badge/database-SQLite%20%7C%20MongoDB%20%7C%20Postgres%20%7C%20MySQL%20%7C%20Firebase-555" alt="Databases">
+</p>
+
+<p align="center"><img src="docs/screenshots/inbox-light.webp" alt="PKJ Mails inbox" width="100%"></p>
 
 ---
 
-> 📸 *Screenshot placeholder: Inbox screenshot*
+## Pick your path
+
+You do **not** need to know programming. Choose what you want to do and follow that guide only.
+
+| I want to… | Guide | Time |
+|---|---|---|
+| 🖥️ **Try it on my computer** | [Path A below](#path-a--try-it-on-your-computer) | 10 min |
+| 🌍 **Put it online (free)** so I can open it from any phone or laptop | [Path B below](#path-b--put-it-online-free) | 15 min |
+| ✉️ **Get my own address** like `hello@mybrand.com` | [docs/OWN-DOMAIN.md](docs/OWN-DOMAIN.md) | 45 min, once |
+| 📬 **Just read my Gmail / Outlook** in a nicer inbox | Path A or B, then [use Gmail](#using-gmail-or-outlook) | +5 min |
+
+---
 
 ## What you get
 
-- **Inbox that feels familiar**: Compose, Inbox, Starred, Sent, Drafts, All Mail, Spam, Trash and your own Labels.
-- **Conversations**: replies stay together in one thread (yours and theirs), older mails fold up, "3 more messages" bar.
-- Mail list with checkboxes, stars, sender, subject, preview and time. Unread mail is **bold**. Right-click a mail for quick actions.
-- **Archive** clears the Inbox without deleting; everything stays in All Mail. Undo on archive, delete and spam.
-- **Undo Send** (5–30 seconds, or off), reply, reply all, forward, attachments (drag and drop too).
-- **Contact suggestions** while typing an address (learned from mail you send and receive).
-- **New mail appears at once** (live connection) with optional desktop notifications.
-- **Remote images are hidden** until you allow them, so senders cannot track when you open a mail.
-- **Your own brand**: change the app name, logo and main colour in Settings > Branding.
-- Compose window in the bottom-right corner (minimise, full screen, drafts save by themselves).
-- Search like `from:ana is:unread has:attachment in:archive invoice`.
-- Works on phones. Light and dark mode.
-- Keyboard shortcuts (press `?` in the app): `c` compose, `/` search, `j`/`k` next/previous, `e` archive, `r` reply, `a` reply all, `f` forward, `s` star, `#` delete, `!` spam, `u` back.
-- **Any database**: change one line in `.env`.
-- **Send** through Gmail, Outlook, Zoho, Brevo, Resend or any SMTP server.
-- **Receive** by IMAP (checks your mailbox every minute) and/or a webhook.
-- A **setup page** on first start that asks for your login and mail settings and tests them.
-- Safe by default: hashed password, sessions, rate limits, CSRF protection, mail HTML cleaned of scripts and shown in a locked frame.
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/open.webp" alt="Reading a mail"></td>
+<td width="50%"><img src="docs/screenshots/compose.webp" alt="Writing a mail"></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/inbox-dark.webp" alt="Dark mode"></td>
+<td width="50%" align="center"><img src="docs/screenshots/phone.webp" alt="On a phone" width="46%"></td>
+</tr>
+</table>
+
+- **A familiar inbox:** Inbox, Starred, Sent, Drafts, All Mail, Spam, Trash and your own Labels.
+- **Conversations:** replies stay together in one thread; older mails fold up.
+- **Archive, star, labels, search** — e.g. `from:ana is:unread has:attachment invoice`.
+- **Undo Send** (5–30 seconds), reply, reply all, forward, attachments with drag and drop.
+- **New mail shows up instantly**, with optional desktop notifications.
+- **Tracking pixels blocked:** remote images stay hidden until you allow them.
+- **Your brand:** change the app name, logo and colour in Settings → Branding.
+- **Works on phones**, light and dark mode, keyboard shortcuts (press `?`).
+- **Any database:** SQLite (zero setup), MongoDB, PostgreSQL, MySQL or Firebase — change one line.
+- **Send** through Resend, Brevo, Gmail, Outlook, Zoho or any SMTP server. **Receive** by IMAP or straight from your domain.
+- **Safe by default:** hashed password, encrypted mail passwords, CSRF protection, rate limits, cleaned mail HTML in a locked frame.
 
 ---
 
-## Quick start (about 10 minutes)
+## Path A — Try it on your computer
 
-You do **not** need to know programming. Follow the steps one by one.
+### 1. Install Node.js
+Download the **LTS** version (22 or newer) from **https://nodejs.org** and install it (keep clicking *Next*).
 
-### Step 1. Install Node.js
-
-1. Open **https://nodejs.org**
-2. Download the **LTS** version (22 or newer) and install it. Keep clicking "Next".
-3. To check, open a terminal:
-   - **Windows**: press the Windows key, type `cmd`, press Enter.
-   - **Mac**: open the **Terminal** app.
-   - Type `node -v` and press Enter. You should see something like `v22.11.0`.
-
-> 📸 *Screenshot placeholder: Node version screenshot*
-
-### Step 2. Download PKJ Mails
-
-**Easy way:** on this GitHub page click the green **Code** button, then **Download ZIP**. Unzip it (right click > Extract all).
-
-**Or with git:**
+To check, open a terminal — **Windows:** press the Windows key, type `cmd`, Enter · **Mac:** open *Terminal* — and type:
 
 ```bash
-git clone https://github.com/pankaj-pkj/pkj-mails.git
+node -v
 ```
 
-### Step 3. Open the folder in the terminal
+You should see something like `v22.11.0`.
 
-```bash
-cd pkj-mails
-```
+### 2. Download PKJ Mails
+On this page click the green **Code** button → **Download ZIP**, then unzip it (right-click → *Extract all*).
 
-(If you downloaded the ZIP, the folder may be called `pkj-mails-main`. Tip on Windows: open the folder, click the address bar, type `cmd`, press Enter.)
+> Windows tip: open the unzipped folder, click the address bar, type `cmd`, press Enter — a terminal opens in the right place.
 
-### Step 4. Make your `.env` file
+### 3. Make your settings file
+In the terminal, inside the folder:
 
-Copy the example settings file:
-
-- **Windows:** `copy .env.example .env`
-- **Mac / Linux:** `cp .env.example .env`
-
-Open `.env` in Notepad (or any text editor) and fill:
-
-| Setting | What to put |
+| Windows | Mac / Linux |
 |---|---|
-| `APP_SECRET` | A long random text. Make one with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and paste the result. |
-| `DB_TYPE` | Keep `sqlite` to start. Nothing else to install. |
-| `DATABASE_URL` | Only if you choose mongodb, postgres or mysql (see "Choose a database" below). |
-| `SETUP_CODE` | Optional: any word you like. You will type it on the setup page. |
+| `copy .env.example .env` | `cp .env.example .env` |
 
-Save the file. **Never share `.env` or upload it to GitHub.** It is already in `.gitignore`.
+Open `.env` with Notepad and set **one** line — `APP_SECRET` — to a long random text. Make one with:
 
-### Step 5. Install and start
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Keep `DB_TYPE=sqlite`. Save. **Never share or upload `.env`.**
+
+### 4. Start it
 
 ```bash
 npm install
 npm start
 ```
 
-You will see:
+You'll see:
 
 ```
   PKJ Mails is running
   Open:     http://localhost:3000
-  Database: sqlite
-
   Setup code: 3f9a1c2b   (the setup page asks for it)
 ```
 
-### Step 6. Finish setup in the browser
+### 5. Finish setup in the browser
 
-1. Open **http://localhost:3000**
-2. Type the **setup code** from the terminal.
-3. Create your **admin login** (email + password, 10+ characters).
-4. **Sending**: click your provider (Gmail, Outlook, Brevo...), fill username and password, press **Send a test mail**. Green tick = it works.
-5. **Receiving** (optional): fill the IMAP box and press **Test receiving**. You can skip and do this later in Settings.
-6. Press **Finish setup**, then sign in. Done! 🎉
+<img src="docs/screenshots/setup.webp" alt="Setup page" width="100%">
 
-> 📸 *Screenshot placeholder: Setup screenshot*
+1. Open **http://localhost:3000** and type the **setup code** from the terminal.
+2. Create your login (email + a password of 10+ characters).
+3. **Sending:** click your provider (Gmail, Resend, Brevo…), fill the fields, press **Send a test mail** — green tick = done.
+4. **Receiving (optional):** fill IMAP and press **Test receiving**, or skip and do it later in Settings.
+5. Press **Finish setup** and sign in. 🎉
 
-To stop the app press `Ctrl + C` in the terminal. To start again: `npm start`.
+Stop with `Ctrl + C`. Start again with `npm start`.
 
 ---
 
-## Using Gmail to send and receive
+## Path B — Put it online (free)
 
-Gmail does not accept your normal password from apps. You need an **App password**:
+1. Get a free database: **MongoDB Atlas** (M0 cluster) or **Neon Postgres**. Copy its connection link.
+2. Click **Deploy to Render** at the top of this page and sign in with GitHub.
+3. Render asks for two values:
+   - `DATABASE_URL` — the link from step 1
+   - `SETUP_CODE` — any long word only you know, like `blue-tiger-river-42`
+4. Click **Apply**. When the log says `PKJ Mails is running`, open your `https://…onrender.com` link and finish setup (step 5 above).
+
+Step-by-step with every click: **[docs/DEPLOY-RENDER.md](docs/DEPLOY-RENDER.md)** · Own server instead: **[docs/DEPLOY-VPS.md](docs/DEPLOY-VPS.md)**
+
+> Don't use SQLite on Render's free plan — its disk is wiped on restart. Use MongoDB or Postgres there.
+
+---
+
+## Your own domain address
+
+Want `hello@yourdomain.com` instead of a Gmail address? **[docs/OWN-DOMAIN.md](docs/OWN-DOMAIN.md)** walks you through it with clicks only:
+
+1. **Receive:** Cloudflare Email Routing (free) hands every mail for your domain to PKJ Mails.
+2. **Send:** Resend (free plan) sends your mail as `you@yourdomain.com`.
+3. **Inbox, not spam:** three DNS records copied from Resend + one DMARC line.
+
+You only pay for the domain itself.
+
+---
+
+## Using Gmail or Outlook
+
+**Gmail** needs an *App password* (your normal password won't work):
 
 1. Turn on **2-Step Verification**: https://myaccount.google.com/security
-2. Open https://myaccount.google.com/apppasswords
-3. Name it "PKJ Mails", press **Create**, copy the 16-letter password.
-4. On the setup page click **Gmail**, and use:
-   - Username: your full Gmail address
-   - Password: the 16-letter app password
-   - IMAP: same username and app password
-5. In Gmail settings > **Forwarding and POP/IMAP**, make sure **IMAP is enabled**.
+2. Open https://myaccount.google.com/apppasswords → name it "PKJ Mails" → **Create** → copy the 16-letter password.
+3. On the setup page click **Gmail**; username = your Gmail address, password = the 16-letter code (same for IMAP).
+4. Gmail → Settings → **Forwarding and POP/IMAP** → make sure **IMAP is enabled**.
 
-Other providers: Outlook (`smtp-mail.outlook.com`, 587), Zoho (`smtp.zoho.com`, 465), Brevo (`smtp-relay.brevo.com`, 587, SMTP key as password), Resend (`smtp.resend.com`, 465, user `resend`, API key as password). The setup page fills these for you.
+**Others:** the setup page fills server details for Outlook, Zoho, Brevo and Resend when you click their name.
 
 ---
 
 ## Choose a database
 
-Change `DB_TYPE` in `.env`, then restart (`Ctrl + C`, then `npm start`). Tables are created by themselves.
+Change `DB_TYPE` in `.env` (or Render → Environment) and restart. Tables are created automatically.
 
-| DB_TYPE | Good for | What to fill | Free option |
+| `DB_TYPE` | Best for | What to fill | Free option |
 |---|---|---|---|
-| `sqlite` | Your own computer or a VPS. Zero setup. | nothing (file is `data/pkj-mails.db`) | built in |
-| `mongodb` | Hosting sites like Render | `DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/pkjmails` | MongoDB Atlas free tier |
-| `postgres` | Hosting sites | `DATABASE_URL=postgres://user:pass@host:5432/pkjmails` | Neon, Supabase |
-| `mysql` | Shared hosting, cPanel | `DATABASE_URL=mysql://user:pass@host:3306/pkjmails` | many hosts include it |
-| `firebase` | If you already use Firebase | `FIREBASE_DB_URL` and `FIREBASE_DB_SECRET` | Firebase Spark plan |
-
-> **Important for Render / Railway / Heroku-style hosts:** their disk is wiped on every restart, so SQLite would lose your mail. Use MongoDB, Postgres, MySQL or Firebase there (or add a paid persistent disk).
-
-**Firebase:** create a Realtime Database, then Project settings > Service accounts > **Database secrets** > copy the secret into `FIREBASE_DB_SECRET`. Keep your database rules locked (`".read": false, ".write": false`); the secret still works.
-
-**Add your own database:** copy `src/db/memory.js`, fill the same methods, and add it to `src/db/index.js`.
+| `sqlite` | Your computer or a VPS | nothing | built in |
+| `mongodb` | Render and similar hosts | `DATABASE_URL=mongodb+srv://…/pkjmails` | MongoDB Atlas |
+| `postgres` | Render and similar hosts | `DATABASE_URL=postgres://…/pkjmails` | Neon, Supabase |
+| `mysql` | Shared hosting / cPanel | `DATABASE_URL=mysql://…/pkjmails` | often included |
+| `firebase` | If you already use Firebase | `FIREBASE_DB_URL` + `FIREBASE_DB_SECRET` | Spark plan |
 
 ---
 
-## Receiving mail
+## How mail comes in
 
-PKJ Mails can get new mail two ways. Use one or both.
-
-### A. IMAP (easiest)
-Fill IMAP on the setup page or in **Settings > Receiving**. The app checks the mailbox every 60 seconds (`IMAP_POLL_SECONDS`) and copies new mail to your inbox. The first time it only copies the newest 50 mails. Mail stays in your original mailbox too.
-
-### B. Webhook (for your own domain)
-1. Put `INBOUND_SECRET=<a long random text>` in `.env` and restart.
-2. Send each incoming mail to `POST https://your-site/api/inbound` with the header `Authorization: Bearer <INBOUND_SECRET>` (or `?key=<INBOUND_SECRET>` in the link).
-3. The body can be the **raw mail** (`Content-Type: message/rfc822`) or **JSON**: `{ "from": "...", "to": "...", "subject": "...", "text": "...", "html": "..." }` or `{ "raw": "<base64 raw mail>", "encoding": "base64" }`.
-
-Ready-made example for **Cloudflare Email Routing** (free, for your own domain): [`docs/cloudflare-email-worker.js`](docs/cloudflare-email-worker.js).
-
----
-
-## Deploying online
-
-- **Render (free, click-through):** [docs/DEPLOY-RENDER.md](docs/DEPLOY-RENDER.md)
-- **Your own VPS (DigitalOcean, Hetzner, AWS Lightsail…):** [docs/DEPLOY-VPS.md](docs/DEPLOY-VPS.md)
-
-Always use **https** online, so your password and mail are encrypted on the way.
+- **IMAP** — reads an existing mailbox (Gmail, Outlook, Zoho…) every 60 seconds. Easiest.
+- **Your domain** — Cloudflare Email Routing → a tiny Worker → PKJ Mails. See [OWN-DOMAIN.md](docs/OWN-DOMAIN.md).
+- **Any other service** — `POST /api/inbound` with header `Authorization: Bearer <INBOUND_SECRET>`; body = raw mail (`message/rfc822`) or JSON `{ "from", "to", "subject", "text", "html" }`.
 
 ---
 
 ## Something went wrong?
 
-See **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**. The most common ones:
-
 | You see | Fix |
 |---|---|
-| `'node' is not recognized` | Install Node.js (Step 1), then close and reopen the terminal. |
+| `'node' is not recognized` | Install Node.js, then close and reopen the terminal. |
 | `PKJ Mails needs Node.js 22 or newer` | Install the latest LTS from nodejs.org. |
-| `Port 3000 is already in use` | Put `PORT=3001` in `.env`, or close the other app. |
-| `SMTP login failed` | Wrong username/password. For Gmail use an **App password**. |
-| `SMTP server did not answer` | Port and Secure switch don't match: 465 = Secure ON, 587 = Secure OFF. |
-| `The setup code is wrong` | Look in the terminal for `Setup code: ...`, or set `SETUP_CODE` in `.env`. |
-| `Could not open the database` | Check `DB_TYPE` and `DATABASE_URL` in `.env`. |
+| `Port 3000 is already in use` | Put `PORT=3001` in `.env`. |
+| `SMTP login failed` | Wrong username/password. Gmail needs an **App password**; Resend's username is `resend`. |
+| `SMTP server did not answer` | 465 = Secure **on**, 587 = Secure **off**. |
+| `The setup code is wrong` | Find `Setup code: …` in the terminal / Render logs, or set `SETUP_CODE`. |
+| Forgot the password | Put `ADMIN_EMAIL=` and `ADMIN_PASSWORD=` in `.env` and restart. |
 
-### Reset the admin password
-Stop the app, add these two lines to `.env`, start again and sign in with them:
-
-```
-ADMIN_EMAIL=you@example.com
-ADMIN_PASSWORD=your-new-long-password
-```
-
-While these are set they win over the password saved by the setup page.
+Everything else: **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**
 
 ---
 
-## Change the name, logo and colour
+## Security
 
-Open **Settings** (gear icon) > **Branding**:
+**"The code is public — can someone read it and break into my inbox?"** No. Security here does not depend on hiding the code;
+it depends on secrets only you have: your password, `APP_SECRET`, `INBOUND_SECRET` and your mail-provider passwords.
+Those live in `.env` (never uploaded) or encrypted in your database.
 
-- **App name**: shown in the top bar, the browser tab and the sign-in page.
-- **Logo**: PNG, JPG, WEBP or GIF up to 300 KB (square works best). It also becomes the browser tab icon.
-- **Main colour**: buttons, Compose and the selected folder.
+- Password hashed with scrypt; saved SMTP/IMAP passwords encrypted with AES-256-GCM.
+- Sessions in HttpOnly, SameSite=Strict cookies; only their hash is stored. Password change signs out every other device.
+- CSRF token + custom header on every change; sign-in, setup code, sending and inbound are rate limited.
+- Mail HTML is stripped of scripts and shown in a sandboxed frame; attachments always download.
+- Executables can't be sent as attachments; logos must be real images.
+- Set `TRUST_PROXY=1` only behind a proxy (Render, Nginx, Cloudflare).
 
-You can also set `APP_NAME=` in `.env`. The setup page asks for the name too.
-
----
-
-## Security notes
-
-**"The code is public. Can someone who reads it hack my inbox?"** No. Like every good security design, PKJ Mails does not depend on hiding how it works; it depends on secrets that only you have: your password, `APP_SECRET`, `INBOUND_SECRET` and your SMTP/IMAP passwords. Those live in `.env` (never uploaded) or encrypted in your database. Reading the code tells an attacker nothing they can use without them. Keep them long and random, keep `.env` private, use https, and update when a new version comes out.
-
-What protects you:
-
-- Your password is stored hashed (scrypt). Saved SMTP/IMAP passwords are encrypted with `APP_SECRET` (AES-256-GCM).
-- Sessions are random tokens in an HttpOnly, SameSite=Strict cookie; only their hash is stored.
-- Every change needs a CSRF token and a custom header; other websites cannot act for you.
-- Sign-in tries, setup-code tries, sending and the webhook are rate limited. Wrong passwords are also counted for everybody together (30 per hour), so changing IP addresses does not help a guesser.
-- Changing your password signs out every other device. Settings > Security can also "Sign out all other devices".
-- Visitors who are not signed in can only send tiny requests; big uploads are read only after the session is checked.
-- Remote images in mails are blocked until you allow them (no tracking pixels).
-- Programs and scripts (`.exe`, `.bat`, `.js`, `.ps1`...) cannot be sent as attachments; uploaded logos must be real pictures (SVG is refused).
-- `TRUST_PROXY=1` only when the app is behind a proxy (Render, Nginx). Without a proxy, leave it empty, otherwise visitors could fake their IP address.
-- Mail HTML is cleaned (no scripts, forms, event handlers or `javascript:` links) and shown in a sandboxed frame that cannot run scripts. Attachments always download, never open inside the app.
-- Secrets live only in `.env` (git-ignored) or encrypted in your database.
-- If you change `APP_SECRET`, saved mail passwords can no longer be read; enter them again in Settings.
-
-Found a security problem? Please open a private security advisory on GitHub instead of a public issue.
+Found a problem? Please open a **private security advisory** on GitHub instead of a public issue.
 
 ---
 
 ## For developers
 
 ```bash
-npm test         # adapter + API tests (memory and SQLite always; others with TEST_*_URL)
-npm run dev      # restarts on file changes
+npm test        # adapter + API tests (memory and SQLite always; others with TEST_*_URL)
+npm run dev     # restarts on file changes
 ```
 
-Run the adapter tests against real databases (use **empty** test databases):
-
-```bash
-TEST_POSTGRES_URL=postgres://... TEST_MYSQL_URL=mysql://... TEST_MONGODB_URL=mongodb://... npm test
+```
+src/server.js     starts the app, reads .env
+src/app.js        the API (/api/...)
+src/security.js   passwords, sessions, rate limits, encryption
+src/db/           storage adapters: sql.js (sqlite/postgres/mysql), mongo.js, firebase.js, memory.js
+src/mail/         MIME parser, HTML sanitizer, SMTP/IMAP, settings
+public/           the inbox (plain JavaScript, no build step)
+docs/             guides + the Cloudflare email worker
 ```
 
-Project layout:
-
-```
-src/server.js         starts the app, reads .env
-src/app.js            the API (/api/...)
-src/security.js       passwords, sessions, rate limits, encryption
-src/db/               storage adapters: sql.js (sqlite/postgres/mysql), mongo.js, firebase.js, memory.js
-src/mail/             mime parser, HTML sanitizer, SMTP/IMAP, settings
-public/               the inbox page (plain JavaScript, no build step)
-test/                 node:test tests
-```
+Add a database: copy `src/db/memory.js`, fill the same methods, register it in `src/db/index.js`.
 
 ## License
 
-MIT. Free to use, change and share. See [LICENSE](LICENSE).
+MIT — free to use, change and share. See [LICENSE](LICENSE).
 
-PKJ Mails is an independent project and is not affiliated with Google or Gmail.
+Made by **[Pankaj Kumawat](https://www.codianstudio.org/)** · Codian Studio.
+PKJ Mails is an independent project and is not affiliated with Google, Gmail, Cloudflare, Render or Resend.

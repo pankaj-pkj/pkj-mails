@@ -43,9 +43,9 @@ Render runs the app for you. No server to manage. Takes about 15 minutes.
 
 5. Click **Create Web Service**. Wait until the log says `PKJ Mails is running`.
 
-> 📸 *Screenshot placeholder: Render environment screenshot*
-
-Tip: the repo has a `render.yaml`, so you can also use **New + > Blueprint** and only fill the secret values.
+**Shortcut:** instead of steps 2–5, click the **Deploy to Render** button in the README
+(or **New + > Blueprint** on Render). It reads `render.yaml`, creates `APP_SECRET` and
+`INBOUND_SECRET` for you, and only asks for `DATABASE_URL` and `SETUP_CODE`.
 
 ## Step 4. Finish setup
 1. Open your Render link, e.g. `https://pkj-mails-xxxx.onrender.com`
@@ -53,5 +53,6 @@ Tip: the repo has a `render.yaml`, so you can also use **New + > Blueprint** and
 
 ## Notes
 - Free Render apps sleep after 15 minutes without visits; the first visit then takes ~30 seconds. IMAP checking also pauses while asleep and catches up when it wakes. A paid instance stays awake.
-- Your own domain: Render > Settings > Custom Domains.
+- Your own web address for the app: Render > Settings > Custom Domains.
+- Your own **email** address (`you@yourdomain.com`): follow [OWN-DOMAIN.md](OWN-DOMAIN.md).
 - To update: on your fork click **Sync fork**; Render redeploys by itself.

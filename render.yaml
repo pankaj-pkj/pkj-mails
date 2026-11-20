@@ -20,3 +20,5 @@ services:
         sync: false
       - key: TRUST_PROXY
         value: "1"
+      - key: INBOUND_SECRET
+        generateValue: true
