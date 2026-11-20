@@ -6,14 +6,7 @@ No coding needed. Every step is clicking and copy-paste.
 
 **Time:** about 45 minutes, once. **Cost:** only your domain (the services below have free plans).
 
-```
- Someone writes to hello@mybrand.com
-          │
-          ▼
- Cloudflare Email Routing (free) ──► Cloudflare Worker ──► your PKJ Mails ──► Inbox ✅
-
- You press Send in PKJ Mails ──► Resend (free) ──► arrives as hello@mybrand.com ✅
-```
+<p align="center"><img src="assets/domain-flow.svg" width="100%" alt="Receiving through Cloudflare and a Worker into PKJ Mails; sending through Resend"></p>
 
 ## Before you start
 

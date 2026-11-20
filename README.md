@@ -1,4 +1,5 @@
-<p align="center"><img src="public/logo.svg" width="76" alt="PKJ Mails logo"></p>
+<p align="center"><img src="docs/assets/banner.svg" width="100%" alt="PKJ Mails — your own webmail with your own domain"></p>
+
 <h1 align="center">PKJ Mails</h1>
 
 <p align="center"><b>Your own webmail — with your own domain address.</b><br>
@@ -60,6 +61,8 @@ You do **not** need to know programming. Choose what you want to do and follow t
 
 ## Path A — Try it on your computer
 
+<p align="center"><img src="docs/assets/setup-steps.svg" width="100%" alt="Setup in 4 steps: install Node.js, download, settings, start"></p>
+
 ### 1. Install Node.js
 Download the **LTS** version (22 or newer) from **https://nodejs.org** and install it (keep clicking *Next*).
 
@@ -76,22 +79,9 @@ On this page click the green **Code** button → **Download ZIP**, then unzip it
 
 > Windows tip: open the unzipped folder, click the address bar, type `cmd`, press Enter — a terminal opens in the right place.
 
-### 3. Make your settings file
-In the terminal, inside the folder:
+### 3. Start it
 
-| Windows | Mac / Linux |
-|---|---|
-| `copy .env.example .env` | `cp .env.example .env` |
-
-Open `.env` with Notepad and set **one** line — `APP_SECRET` — to a long random text. Make one with:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Keep `DB_TYPE=sqlite`. Save. **Never share or upload `.env`.**
-
-### 4. Start it
+In the terminal opened **inside the PKJ Mails folder** (see the tip above), type these two lines — press Enter after each:
 
 ```bash
 npm install
@@ -100,13 +90,11 @@ npm start
 
 You'll see:
 
-```
-  PKJ Mails is running
-  Open:     http://localhost:3000
-  Setup code: 3f9a1c2b   (the setup page asks for it)
-```
+<p align="center"><img src="docs/assets/terminal.svg" width="80%" alt="npm install, then npm start prints: PKJ Mails is running, Open: http://localhost:3000, Setup code"></p>
 
-### 5. Finish setup in the browser
+> Keep this window open — closing it stops your mail app. Copy the **setup code** for the next step.
+
+### 4. Finish setup in the browser
 
 <img src="docs/screenshots/setup.webp" alt="Setup page" width="100%">
 
@@ -117,6 +105,10 @@ You'll see:
 5. Press **Finish setup** and sign in. 🎉
 
 Stop with `Ctrl + C`. Start again with `npm start`.
+
+> **No settings file needed on your computer.** PKJ Mails uses SQLite and creates its own secret key on the first start.
+> You only need a `.env` file to choose another database or fix your settings — copy `.env.example` to `.env`
+> and read the comments inside. Online hosts (Render) use their *Environment* page instead.
 
 ---
 
@@ -138,6 +130,8 @@ Step-by-step with every click: **[docs/DEPLOY-RENDER.md](docs/DEPLOY-RENDER.md)*
 ## Your own domain address
 
 Want `hello@yourdomain.com` instead of a Gmail address? **[docs/OWN-DOMAIN.md](docs/OWN-DOMAIN.md)** walks you through it with clicks only:
+
+<p align="center"><img src="docs/assets/domain-flow.svg" width="100%" alt="Receiving: someone, Cloudflare Email Routing, Worker, PKJ Mails. Sending: you, PKJ Mails, Resend, their inbox."></p>
 
 1. **Receive:** Cloudflare Email Routing (free) hands every mail for your domain to PKJ Mails.
 2. **Send:** Resend (free plan) sends your mail as `you@yourdomain.com`.
