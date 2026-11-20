@@ -8,13 +8,19 @@
 
 ## What you get
 
-- **Inbox that feels familiar**: Compose, Inbox, Starred, Sent, Drafts, Spam, Trash and your own Labels.
-- Mail list with checkboxes, stars, sender, subject, preview and time. Unread mail is **bold**.
-- Reading pane (side by side on big screens), reply, reply all, forward, attachments.
+- **Inbox that feels familiar**: Compose, Inbox, Starred, Sent, Drafts, All Mail, Spam, Trash and your own Labels.
+- **Conversations**: replies stay together in one thread (yours and theirs), older mails fold up, "3 more messages" bar.
+- Mail list with checkboxes, stars, sender, subject, preview and time. Unread mail is **bold**. Right-click a mail for quick actions.
+- **Archive** clears the Inbox without deleting; everything stays in All Mail. Undo on archive, delete and spam.
+- **Undo Send** (5–30 seconds, or off), reply, reply all, forward, attachments (drag and drop too).
+- **Contact suggestions** while typing an address (learned from mail you send and receive).
+- **New mail appears at once** (live connection) with optional desktop notifications.
+- **Remote images are hidden** until you allow them, so senders cannot track when you open a mail.
+- **Your own brand**: change the app name, logo and main colour in Settings > Branding.
 - Compose window in the bottom-right corner (minimise, full screen, drafts save by themselves).
-- Search like `from:ana is:unread has:attachment invoice`.
+- Search like `from:ana is:unread has:attachment in:archive invoice`.
 - Works on phones. Light and dark mode.
-- Keyboard shortcuts: `c` compose, `/` search, `j`/`k` next/previous, `r` reply, `s` star, `#` delete, `u` back.
+- Keyboard shortcuts (press `?` in the app): `c` compose, `/` search, `j`/`k` next/previous, `e` archive, `r` reply, `a` reply all, `f` forward, `s` star, `#` delete, `!` spam, `u` back.
 - **Any database**: change one line in `.env`.
 - **Send** through Gmail, Outlook, Zoho, Brevo, Resend or any SMTP server.
 - **Receive** by IMAP (checks your mailbox every minute) and/or a webhook.
@@ -194,12 +200,33 @@ While these are set they win over the password saved by the setup page.
 
 ---
 
+## Change the name, logo and colour
+
+Open **Settings** (gear icon) > **Branding**:
+
+- **App name**: shown in the top bar, the browser tab and the sign-in page.
+- **Logo**: PNG, JPG, WEBP or GIF up to 300 KB (square works best). It also becomes the browser tab icon.
+- **Main colour**: buttons, Compose and the selected folder.
+
+You can also set `APP_NAME=` in `.env`. The setup page asks for the name too.
+
+---
+
 ## Security notes
+
+**"The code is public. Can someone who reads it hack my inbox?"** No. Like every good security design, PKJ Mails does not depend on hiding how it works; it depends on secrets that only you have: your password, `APP_SECRET`, `INBOUND_SECRET` and your SMTP/IMAP passwords. Those live in `.env` (never uploaded) or encrypted in your database. Reading the code tells an attacker nothing they can use without them. Keep them long and random, keep `.env` private, use https, and update when a new version comes out.
+
+What protects you:
 
 - Your password is stored hashed (scrypt). Saved SMTP/IMAP passwords are encrypted with `APP_SECRET` (AES-256-GCM).
 - Sessions are random tokens in an HttpOnly, SameSite=Strict cookie; only their hash is stored.
 - Every change needs a CSRF token and a custom header; other websites cannot act for you.
-- Sign-in tries, setup-code tries, sending and the webhook are rate limited.
+- Sign-in tries, setup-code tries, sending and the webhook are rate limited. Wrong passwords are also counted for everybody together (30 per hour), so changing IP addresses does not help a guesser.
+- Changing your password signs out every other device. Settings > Security can also "Sign out all other devices".
+- Visitors who are not signed in can only send tiny requests; big uploads are read only after the session is checked.
+- Remote images in mails are blocked until you allow them (no tracking pixels).
+- Programs and scripts (`.exe`, `.bat`, `.js`, `.ps1`...) cannot be sent as attachments; uploaded logos must be real pictures (SVG is refused).
+- `TRUST_PROXY=1` only when the app is behind a proxy (Render, Nginx). Without a proxy, leave it empty, otherwise visitors could fake their IP address.
 - Mail HTML is cleaned (no scripts, forms, event handlers or `javascript:` links) and shown in a sandboxed frame that cannot run scripts. Attachments always download, never open inside the app.
 - Secrets live only in `.env` (git-ignored) or encrypted in your database.
 - If you change `APP_SECRET`, saved mail passwords can no longer be read; enter them again in Settings.

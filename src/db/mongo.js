@@ -8,7 +8,8 @@ const has = s => ({ $regex: esc(s), $options: 'i' });
 function filterFor(nq) {
   const f = {};
   const and = [];
-  if (nq.folder) f.folder = nq.folder; else f.folder = { $nin: ['trash', 'spam'] };
+  if (nq.thread) and.push({ $or: [{ threadId: nq.thread }, { threadId: { $exists: false }, _id: nq.thread }] });
+  if (nq.folder) f.folder = nq.folder; else if (!nq.anyFolder) f.folder = { $nin: ['trash', 'spam'] };
   if (nq.starred) f.starred = true;
   if (nq.label) f.labels = nq.label;
   const s = nq.search;
@@ -27,7 +28,7 @@ function filterFor(nq) {
   return f;
 }
 
-const out = d => { if (!d) return null; const { _id, ...rest } = d; return { id: _id, ...rest }; };
+const out = d => { if (!d) return null; const { _id, ...rest } = d; return { id: _id, ...rest, threadId: rest.threadId || _id }; };
 const LIST_PROJ = { text: 0, html: 0, attachments: 0, cc: 0, bcc: 0 };
 
 function createMongoAdapter(url) {
@@ -44,6 +45,7 @@ function createMongoAdapter(url) {
       kv = db.collection('pkj_kv');
       await msgs.createIndex({ folder: 1, date: -1 });
       await msgs.createIndex({ messageId: 1 });
+      await msgs.createIndex({ threadId: 1 });
     },
     async close() { await client.close(); },
     async kvGet(k) { const d = await kv.findOne({ _id: k }); return d ? d.v : null; },
@@ -51,7 +53,7 @@ function createMongoAdapter(url) {
     async kvDel(k) { await kv.deleteOne({ _id: k }); },
     async insert(msg) {
       const { id, ...rest } = msg;
-      await msgs.insertOne({ _id: id, ...rest, hasAttachments: Boolean(msg.attachments && msg.attachments.length) || Boolean(msg.hasAttachments) });
+      await msgs.insertOne({ _id: id, ...rest, threadId: msg.threadId || id, hasAttachments: Boolean(msg.attachments && msg.attachments.length) || Boolean(msg.hasAttachments) });
       return msg;
     },
     async get(id) { return out(await msgs.findOne({ _id: id })); },

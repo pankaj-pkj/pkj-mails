@@ -37,7 +37,7 @@ Render runs the app for you. No server to manage. Takes about 15 minutes.
 | `APP_SECRET` | a long random text (64 letters/numbers) |
 | `DB_TYPE` | `mongodb` (or `postgres`) |
 | `DATABASE_URL` | the link from Step 1 |
-| `SETUP_CODE` | any word you choose, e.g. `my-setup-2026` |
+| `SETUP_CODE` | a long word only you know (8+ characters), e.g. `blue-tiger-river-42` |
 | `TRUST_PROXY` | `1` |
 | `NODE_VERSION` | `22` |
 

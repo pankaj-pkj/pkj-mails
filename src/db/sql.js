@@ -7,14 +7,15 @@
  */
 const { summary, normalizeQuery, emptyCounts } = require('./query');
 
-const LIST_COLS = 'id, folder, from_addr, from_name, to_addrs, subject, snippet, date_ms, is_read, starred, labels, has_att';
-const BODY_KEYS = ['cc', 'bcc', 'replyTo', 'text', 'html', 'attachments', 'inReplyTo', 'references', 'prevFolder', 'trashedAt'];
+const LIST_COLS = 'id, thread_id, folder, from_addr, from_name, to_addrs, subject, snippet, date_ms, is_read, starred, labels, has_att';
+const BODY_KEYS = ['cc', 'bcc', 'replyTo', 'text', 'html', 'attachments', 'inReplyTo', 'references', 'prevFolder', 'trashedAt', 'sendAt'];
 
 function toRow(m) {
   const body = {};
   for (const k of BODY_KEYS) if (m[k] !== undefined) body[k] = m[k];
   return {
     id: m.id,
+    thread_id: m.threadId || m.id,
     folder: m.folder,
     from_addr: m.from || '',
     from_name: m.fromName || '',
@@ -36,6 +37,7 @@ function fromRow(r) {
   try { body = r.body ? JSON.parse(r.body) : {}; } catch (_) {}
   return {
     id: r.id,
+    threadId: r.thread_id || r.id,
     folder: r.folder,
     from: r.from_addr,
     fromName: r.from_name,
@@ -55,8 +57,9 @@ function fromRow(r) {
 function whereFor(nq) {
   const w = [];
   const p = [];
+  if (nq.thread) { w.push('thread_id = ?'); p.push(nq.thread); }
   if (nq.folder) { w.push('folder = ?'); p.push(nq.folder); }
-  else w.push("folder NOT IN ('trash', 'spam')");
+  else if (!nq.anyFolder) w.push("folder NOT IN ('trash', 'spam')");
   if (nq.starred) w.push('starred = 1');
   if (nq.label) { w.push('labels LIKE ?'); p.push('%,' + nq.label + ',%'); }
   const s = nq.search;
@@ -85,7 +88,12 @@ function createSqlAdapter(driver) {
   const one = async (sql, params) => (await driver.all(sql, params))[0] || null;
   return {
     name: driver.name,
-    async init() { for (const s of driver.schema) await driver.run(s, []); },
+    async init() {
+      for (const s of driver.schema) await driver.run(s, []);
+      // tables made by version 1.0 have no thread column yet
+      try { await driver.run('ALTER TABLE pkj_messages ADD COLUMN thread_id VARCHAR(191)', []); } catch (_) {}
+      for (const s of driver.indexes || []) { try { await driver.run(s, []); } catch (_) {} }
+    },
     async close() { await driver.close(); },
     async kvGet(k) {
       const r = await one('SELECT v FROM pkj_kv WHERE k = ?', [k]);
@@ -131,7 +139,7 @@ function createSqlAdapter(driver) {
       return fromRow(await one('SELECT * FROM pkj_messages WHERE message_id = ?', [mid]));
     },
     async idsInFolderOlderThan(folder, ms) {
-      const rows = await driver.all('SELECT id, body, date_ms FROM pkj_messages WHERE folder = ?', [folder]);
+      const rows = await driver.all('SELECT id, thread_id, body, date_ms FROM pkj_messages WHERE folder = ?', [folder]);
       return rows.map(fromRow).filter(m => (m.trashedAt || m.date) < ms).map(m => m.id);
     }
   };
@@ -159,6 +167,7 @@ function sqliteDriver(file) {
     schema: [...commonSchema('TEXT', 'TEXT', 'TEXT'),
       'CREATE INDEX IF NOT EXISTS pkj_msg_folder_date ON pkj_messages (folder, date_ms)',
       'CREATE INDEX IF NOT EXISTS pkj_msg_mid ON pkj_messages (message_id)'],
+    indexes: ['CREATE INDEX IF NOT EXISTS pkj_msg_thread ON pkj_messages (thread_id)'],
     upsertKv: 'INSERT INTO pkj_kv (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v',
     async run(sql, params) { db.prepare(sql).run(...params); },
     async all(sql, params) { return db.prepare(sql).all(...params); },
@@ -175,6 +184,7 @@ function postgresDriver(url) {
     schema: [...commonSchema('TEXT', 'VARCHAR(191)', 'TEXT'),
       'CREATE INDEX IF NOT EXISTS pkj_msg_folder_date ON pkj_messages (folder, date_ms)',
       'CREATE INDEX IF NOT EXISTS pkj_msg_mid ON pkj_messages (message_id)'],
+    indexes: ['CREATE INDEX IF NOT EXISTS pkj_msg_thread ON pkj_messages (thread_id)'],
     upsertKv: 'INSERT INTO pkj_kv (k, v) VALUES (?, ?) ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v',
     async run(sql, params) { await pool.query(conv(sql), params); },
     async all(sql, params) { return (await pool.query(conv(sql), params)).rows; },
@@ -197,6 +207,7 @@ function mysqlDriver(url) {
         message_id VARCHAR(255), body LONGTEXT,
         INDEX pkj_msg_folder_date (folder, date_ms), INDEX pkj_msg_mid (message_id)) CHARACTER SET utf8mb4`
     ],
+    indexes: ['CREATE INDEX pkj_msg_thread ON pkj_messages (thread_id)'], // fails harmlessly when it exists
     upsertKv: 'INSERT INTO pkj_kv (k, v) VALUES (?, ?) ON DUPLICATE KEY UPDATE v = VALUES(v)',
     async run(sql, params) { await pool.query(sql, params); },
     async all(sql, params) { return (await pool.query(sql, params))[0]; },

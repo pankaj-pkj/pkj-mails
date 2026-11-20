@@ -56,7 +56,7 @@ async function main() {
   }
   const { app, setupCode, startBackground } = createApp({ db, env: process.env, secret: appSecret() });
   const port = Number(process.env.PORT) || 3000;
-  const server = app.listen(port, async () => {
+  const server = app.listen(port, process.env.HOST || undefined, async () => {
     console.log('\n  PKJ Mails is running');
     console.log(`  Open:     http://localhost:${port}`);
     console.log(`  Database: ${db.name}`);

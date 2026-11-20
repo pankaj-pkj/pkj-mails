@@ -29,7 +29,7 @@ sudo cp .env.example .env
 sudo nano .env
 ```
 
-In `nano`, fill `APP_SECRET` (make one with `openssl rand -hex 32`), keep `DB_TYPE=sqlite`, set `SETUP_CODE` to a word you choose and `TRUST_PROXY=1`. Save with `Ctrl+O`, Enter, then `Ctrl+X`.
+In `nano`, fill `APP_SECRET` (make one with `openssl rand -hex 32`), keep `DB_TYPE=sqlite`, set `SETUP_CODE` to a long word you choose (8+ characters), `TRUST_PROXY=1` and `HOST=127.0.0.1` (so only Nginx can reach the app, never visitors directly). Save with `Ctrl+O`, Enter, then `Ctrl+X`.
 
 ```bash
 sudo chown -R pkjmails:pkjmails /opt/pkj-mails

@@ -75,6 +75,19 @@ for (const [name, env] of targets) {
       assert.equal(counts.starred.total, 1);
     });
 
+    await t.test('conversations and archive', async () => {
+      const reply = mail({ date: Date.now() - 500, folder: 'sent', threadId: a.id, subject: 'Re: Invoice for March', read: true });
+      await db.insert(reply);
+      const th = await db.list({ thread: a.id });
+      assert.deepEqual(th.items.map(i => i.id).sort(), [a.id, reply.id].sort(), 'a thread spans folders');
+      assert.equal((await db.get(reply.id)).threadId, a.id);
+      assert.equal((await db.get(b.id)).threadId, b.id, 'a mail alone is its own thread');
+      await db.update(reply.id, { folder: 'archive' });
+      assert.equal((await db.list({ all: true })).items.some(i => i.id === reply.id), true, 'All Mail shows archived mail');
+      assert.equal((await db.list({ folder: 'inbox' })).items.some(i => i.id === reply.id), false);
+      await db.remove(reply.id);
+    });
+
     await t.test('search', async () => {
       assert.deepEqual((await db.list({ q: 'invoice' })).items.map(i => i.id), [a.id]);
       assert.deepEqual((await db.list({ q: 'from:bob' })).items.map(i => i.id), [b.id]);

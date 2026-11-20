@@ -4,18 +4,22 @@
  */
 const crypto = require('crypto');
 
-const FOLDERS = ['inbox', 'sent', 'drafts', 'spam', 'trash'];
+const FOLDERS = ['inbox', 'sent', 'drafts', 'spam', 'trash', 'archive'];
 const LABEL_RE = /^[\p{L}\p{N} _-]{1,40}$/u;
+const ID_RE = /^[a-z0-9]{6,40}$/;
+const HIDDEN = ['trash', 'spam']; // views like Starred, a label or All Mail leave these out
 
 /** Time-ordered id, safe as a key in every database. */
 function newId(dateMs = Date.now()) {
   return Math.max(0, Math.floor(dateMs)).toString(36).padStart(9, '0') + crypto.randomBytes(5).toString('hex');
 }
+const isId = v => typeof v === 'string' && ID_RE.test(v);
 
 /** The small row a list shows (no body, no attachment bytes). */
 function summary(m) {
   return {
     id: m.id,
+    threadId: m.threadId || m.id,
     folder: m.folder,
     from: m.from || '',
     fromName: m.fromName || '',
@@ -32,7 +36,7 @@ function summary(m) {
 
 /**
  * "from:ana is:unread invoice" -> { text: ['invoice'], from: 'ana', unread: true }
- * Supported: from: to: subject: label: is:unread is:read is:starred has:attachment, and plain words.
+ * Supported: from: to: subject: label: in: is:unread is:read is:starred has:attachment, and plain words.
  */
 function parseSearch(q) {
   const out = { text: [] };
@@ -44,6 +48,7 @@ function parseSearch(q) {
       const key = m[1].toLowerCase();
       const val = m[2].replace(/^"|"$/g, '').toLowerCase();
       if (key === 'from' || key === 'to' || key === 'subject' || key === 'label') out[key] = val;
+      else if (key === 'in' && FOLDERS.includes(val)) out.in = val;
       else if (key === 'is' && val === 'unread') out.unread = true;
       else if (key === 'is' && val === 'read') out.unread = false;
       else if (key === 'is' && val === 'starred') out.starred = true;
@@ -57,17 +62,25 @@ function parseSearch(q) {
 }
 
 /**
- * The list query: { folder, starred, label, q, limit, offset }.
- * folder "starred" or a label means "anywhere except spam and trash".
+ * The list query: { folder, starred, all, label, thread, q, limit, offset }.
+ * Starred, a label, All Mail and a search look everywhere except spam and trash (unless "in:spam" etc.).
+ * A thread looks in every folder.
  */
 function normalizeQuery(opts = {}) {
-  const folder = FOLDERS.includes(opts.folder) ? opts.folder : null;
+  const search = opts.q ? parseSearch(opts.q) : null;
+  let folder = FOLDERS.includes(opts.folder) ? opts.folder : null;
+  if (opts.starred || opts.label || opts.all) folder = null;
+  if (search && search.in) folder = search.in;
+  else if (search && !opts.folder) folder = null;
+  if (!folder && !opts.starred && !opts.label && !opts.all && !search && !opts.thread) folder = 'inbox';
   return {
-    folder: opts.starred || opts.label ? null : folder || (opts.q ? null : 'inbox'),
+    folder,
+    anyFolder: Boolean(opts.thread),
+    thread: opts.thread ? String(opts.thread) : null,
     starred: Boolean(opts.starred),
     label: opts.label ? String(opts.label) : null,
-    search: opts.q ? parseSearch(opts.q) : null,
-    limit: Math.min(200, Math.max(1, Number(opts.limit) || 50)),
+    search,
+    limit: Math.min(1000, Math.max(1, Number(opts.limit) || 50)),
     offset: Math.max(0, Number(opts.offset) || 0)
   };
 }
@@ -75,11 +88,9 @@ function normalizeQuery(opts = {}) {
 const lc = v => String(v || '').toLowerCase();
 
 function matches(m, nq) {
+  if (nq.thread && (m.threadId || m.id) !== nq.thread) return false;
   if (nq.folder) { if (m.folder !== nq.folder) return false; }
-  else if (m.folder === 'trash' || m.folder === 'spam') {
-    // a search with no folder looks everywhere except the bin and spam
-    return false;
-  }
+  else if (!nq.anyFolder && HIDDEN.includes(m.folder)) return false;
   if (nq.starred && !m.starred) return false;
   if (nq.label && !(m.labels || []).includes(nq.label)) return false;
   const s = nq.search;
@@ -108,7 +119,7 @@ function addToCounts(c, m) {
   if (!c[m.folder]) return;
   c[m.folder].total++;
   if (!m.read) c[m.folder].unread++;
-  if (m.starred && m.folder !== 'trash' && m.folder !== 'spam') {
+  if (m.starred && !HIDDEN.includes(m.folder)) {
     c.starred.total++;
     if (!m.read) c.starred.unread++;
   }
@@ -121,9 +132,29 @@ function cleanPatch(p = {}) {
   if (p.starred !== undefined) out.starred = Boolean(p.starred);
   if (p.folder !== undefined && FOLDERS.includes(p.folder)) out.folder = p.folder;
   if (Array.isArray(p.labels)) out.labels = [...new Set(p.labels.map(String).filter(l => LABEL_RE.test(l)))].slice(0, 20);
-  if (p.prevFolder !== undefined) out.prevFolder = p.prevFolder;
-  if (p.trashedAt !== undefined) out.trashedAt = p.trashedAt;
   return out;
 }
 
-module.exports = { FOLDERS, LABEL_RE, newId, summary, parseSearch, normalizeQuery, matches, emptyCounts, addToCounts, cleanPatch };
+/** Folds a newest-first list of mails into conversations (newest conversation first). */
+function groupThreads(items) {
+  const map = new Map();
+  for (const m of items) {
+    const key = m.threadId || m.id;
+    let t = map.get(key);
+    if (!t) {
+      t = { ...m, ids: [], count: 0, read: true, starred: false, hasAttachments: false, names: [], labels: [] };
+      map.set(key, t);
+    }
+    t.ids.push(m.id);
+    t.count++;
+    if (!m.read) t.read = false;
+    if (m.starred) t.starred = true;
+    if (m.hasAttachments) t.hasAttachments = true;
+    for (const l of m.labels || []) if (!t.labels.includes(l)) t.labels.push(l);
+    const name = m.folder === 'sent' || m.folder === 'drafts' ? 'me' : (m.fromName || m.from || '').split(' ')[0];
+    if (name && !t.names.includes(name)) t.names.push(name);
+  }
+  return [...map.values()];
+}
+
+module.exports = { FOLDERS, HIDDEN, LABEL_RE, ID_RE, isId, newId, summary, parseSearch, normalizeQuery, matches, emptyCounts, addToCounts, cleanPatch, groupThreads };

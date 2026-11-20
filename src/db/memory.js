@@ -14,7 +14,7 @@ function createMemoryAdapter() {
     async kvSet(k, v) { kv.set(k, clone(v)); },
     async kvDel(k) { kv.delete(k); },
     async insert(msg) { messages.set(msg.id, clone(msg)); return clone(msg); },
-    async get(id) { return messages.has(id) ? clone(messages.get(id)) : null; },
+    async get(id) { if (!messages.has(id)) return null; const m = clone(messages.get(id)); return { ...m, threadId: m.threadId || m.id }; },
     async update(id, patch) {
       if (!messages.has(id)) return null;
       const next = { ...messages.get(id), ...clone(patch) };

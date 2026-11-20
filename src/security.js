@@ -10,9 +10,12 @@ function hashPassword(password) {
   const hash = crypto.scryptSync(String(password), salt, 64, { N: 16384, r: 8, p: 1 });
   return `scrypt$16384$${salt.toString('base64')}$${hash.toString('base64')}`;
 }
+// a fixed hash to check against when there is no account, so a wrong email takes as long as a wrong password
+const DUMMY_HASH = hashPassword('pkj-mails-no-such-user');
 function verifyPassword(password, stored) {
-  const parts = String(stored || '').split('$');
+  const parts = String(stored || DUMMY_HASH).split('$');
   if (parts.length !== 4 || parts[0] !== 'scrypt') return false;
+  if (String(password).length > 512) return false; // a huge password would only burn CPU
   const N = Number(parts[1]);
   const salt = Buffer.from(parts[2], 'base64');
   const want = Buffer.from(parts[3], 'base64');
@@ -54,12 +57,16 @@ const COOKIE = 'pkj_sid';
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 const sha = s => crypto.createHash('sha256').update(String(s)).digest('hex');
 
-function createSessions(db) {
+/**
+ * tagNow() returns a short value made from the current password (and a "sign out everywhere" counter).
+ * Every session remembers the tag it was made with; when the password changes, all old sessions stop working.
+ */
+function createSessions(db, tagNow = async () => '') {
   const cache = new Map(); // hash -> session, so each request does not hit the database
   return {
-    async create(email) {
+    async create(email, meta = {}) {
       const sid = crypto.randomBytes(32).toString('base64url');
-      const s = { email, exp: Date.now() + SESSION_MS, csrf: crypto.randomBytes(24).toString('base64url'), at: Date.now() };
+      const s = { email, exp: Date.now() + SESSION_MS, csrf: crypto.randomBytes(24).toString('base64url'), at: Date.now(), tag: await tagNow(), ua: String(meta.ua || '').slice(0, 160) };
       await db.kvSet('sess:' + sha(sid), s);
       cache.set(sha(sid), s);
       return { sid, session: s };
@@ -70,7 +77,7 @@ function createSessions(db) {
       let s = cache.get(h);
       if (!s) { s = await db.kvGet('sess:' + h); if (s) cache.set(h, s); }
       if (!s) return null;
-      if (!(s.exp > Date.now())) { await this.destroy(sid); return null; }
+      if (!(s.exp > Date.now()) || s.tag !== (await tagNow())) { await this.destroy(sid); return null; }
       return s;
     },
     async destroy(sid) {
@@ -100,6 +107,23 @@ function setSessionCookie(req, res, value, maxAgeMs) {
 }
 
 // ---------------------------------------------------------------- rate limits
+/**
+ * Counts failures for everyone together, so changing IP addresses does not help a password guesser:
+ * after `max` failures in `windowMs`, the action is closed for everybody until the window passes.
+ */
+function globalLimit({ windowMs, max }) {
+  let fails = [];
+  return {
+    blockedFor() {
+      const now = Date.now();
+      fails = fails.filter(t => now - t < windowMs);
+      return fails.length >= max ? Math.ceil((fails[0] + windowMs - now) / 1000) : 0;
+    },
+    fail() { fails.push(Date.now()); if (fails.length > max * 4) fails = fails.slice(-max * 2); },
+    reset() { fails = []; }
+  };
+}
+
 /** Allows `max` hits per `windowMs` for each key (usually the visitor's IP). */
 function rateLimit({ windowMs, max, message = 'Too many tries. Please wait a few minutes and try again.' }) {
   const hits = new Map();
@@ -110,6 +134,7 @@ function rateLimit({ windowMs, max, message = 'Too many tries. Please wait a few
   return (req, res, next) => {
     const key = req.ip || 'unknown';
     const now = Date.now();
+    if (hits.size > 20000) hits.clear(); // many fake addresses must not eat the memory
     let e = hits.get(key);
     if (!e || e.reset < now) { e = { n: 0, reset: now + windowMs }; hits.set(key, e); }
     e.n++;
@@ -127,6 +152,8 @@ function securityHeaders(req, res, next) {
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  if (req.secure) res.setHeader('Strict-Transport-Security', 'max-age=15552000');
   // scripts only from this site; mail images may come from anywhere (they are shown inside a sandboxed frame)
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", 'img-src * data: blob:',
@@ -136,4 +163,4 @@ function securityHeaders(req, res, next) {
   next();
 }
 
-module.exports = { hashPassword, verifyPassword, safeEqual, encrypt, decrypt, createSessions, readCookie, setSessionCookie, rateLimit, securityHeaders, COOKIE, SESSION_MS };
+module.exports = { globalLimit, hashPassword, verifyPassword, safeEqual, encrypt, decrypt, createSessions, readCookie, setSessionCookie, rateLimit, securityHeaders, COOKIE, SESSION_MS };

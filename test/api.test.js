@@ -1,39 +1,9 @@
 /** Runs the real server on a free port with an in-memory database and a fake mail sender (SMTP_HOST=test). */
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createAdapter } = require('../src/db');
-const { createApp } = require('../src/app');
 const { sanitizeMailHtml } = require('../src/mail/sanitize');
 const { hashPassword, verifyPassword, encrypt, decrypt } = require('../src/security');
-
-const SECRET = 'x'.repeat(40);
-const INBOUND = 'inbound-secret-for-tests-123';
-
-async function start(envExtra = {}) {
-  const db = createAdapter({ DB_TYPE: 'memory' });
-  await db.init();
-  const env = { INBOUND_SECRET: INBOUND, ...envExtra };
-  const made = createApp({ db, env, secret: SECRET, setupCode: 'code1234', log: { warn() {}, error() {} } });
-  const server = await new Promise(r => { const s = made.app.listen(0, () => r(s)); });
-  const base = `http://127.0.0.1:${server.address().port}/api`;
-  let cookie = '';
-  let csrf = '';
-  async function call(path, { method = 'GET', body, headers = {}, raw } = {}) {
-    const h = { 'x-pkj': '1', ...headers };
-    if (cookie) h.cookie = cookie;
-    if (csrf) h['x-csrf-token'] = csrf;
-    if (body !== undefined && !raw) h['content-type'] = 'application/json';
-    const res = await fetch(base + path, { method, headers: h, body: raw !== undefined ? raw : body !== undefined ? JSON.stringify(body) : undefined });
-    const set = res.headers.get('set-cookie');
-    if (set) cookie = set.split(';')[0];
-    let json = null;
-    try { json = await res.json(); } catch (_) {}
-    return { status: res.status, json };
-  }
-  return { call, db, setCsrf: v => { csrf = v; }, clearCookie: () => { cookie = ''; csrf = ''; }, stop: () => { made.stop(); server.close(); } };
-}
-
-const SMTP = { host: 'test', port: 587, secure: false, user: 'me@example.com', pass: 'app-password', from: 'me@example.com', fromName: 'Me' };
+const { start, SECRET, INBOUND, SMTP } = require('./helpers');
 
 test('setup, sign in, send, receive, folders', async t => {
   const s = await start();

@@ -7,7 +7,7 @@
  */
 const { summary, normalizeQuery, matches, emptyCounts, addToCounts } = require('./query');
 
-const INDEX_KEYS = ['folder', 'from', 'fromName', 'to', 'subject', 'snippet', 'date', 'read', 'starred', 'labels', 'hasAttachments', 'messageId', 'trashedAt'];
+const INDEX_KEYS = ['threadId', 'folder', 'from', 'fromName', 'to', 'subject', 'snippet', 'date', 'read', 'starred', 'labels', 'hasAttachments', 'messageId', 'trashedAt'];
 // Firebase keys cannot hold . $ # [ ] /
 const keyOf = k => encodeURIComponent(String(k)).replace(/\./g, '%2E');
 
@@ -67,7 +67,7 @@ function createFirebaseAdapter({ url, secret, root = 'pkjmails' }) {
       const row = index.get(id);
       if (!row) return null;
       const body = (await call('GET', `body/${id}`)) || {};
-      return { ...row, ...body, id };
+      return { ...row, ...body, id, threadId: row.threadId || id };
     },
     async update(id, patch) {
       await loadIndex();
